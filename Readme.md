@@ -55,10 +55,11 @@ Ubicados en la carpeta `/SQL`:
 - `transform.sql`:  
   - Crea la tabla `BookingsClean` con columnas normalizadas.
   - Aplica transformaciones como fechas, estaciones, países y flags.
-
-- `analytics.sql`:  
   - Crea el modelo estrella con dimensiones y tabla de hechos.
   - Define claves primarias, foráneas y restricciones de unicidad.
+
+- `analytics.sql`:  
+  - Realiza las queries necesarias para extraer los insights para presentar en el analisis
 
 ---
 
@@ -140,3 +141,4 @@ Backend & Data Engineer especializado en BI, modelado dimensional, automatizaci�
 
 
 ---
+
