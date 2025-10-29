@@ -1,0 +1,2052 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="10/27/2025 5:01:32 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="DESKTOP-GOCIPJK"
+  DTS:CreatorName="DESKTOP-GOCIPJK\PC"
+  DTS:DTSID="{2DC4882D-B66F-49EF-BF8F-A49EE97AFD88}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1008.3"
+  DTS:LocaleID="3082"
+  DTS:ObjectName="Package"
+  DTS:PackageType="5"
+  DTS:VersionBuild="19"
+  DTS:VersionGUID="{F6E71DA0-54C4-44DC-8323-70405FCC56DC}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[DESKTOP-GOCIPJK.HotelBookings.sa]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{F08B8F9F-BF2F-4E5B-932B-74EAC1B5B311}"
+      DTS:ObjectName="DESKTOP-GOCIPJK.HotelBookings.sa">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=DESKTOP-GOCIPJK;User ID=sa;Initial Catalog=HotelBookings;Provider=MSOLEDBSQL.1;Auto Translate=False;">
+          <DTS:Password
+            DTS:Name="Password"
+            Sensitive="1"
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAQZKxMK14GkK9bOaHa7BTAgAAAAAIAAAARABUAFMAAAAQZgAAAAEAACAAAACc4KQDujikUTqb5utNE2SGNMj6xNQo5VSEXioYm+wrdgAAAAAOgAAAAAIAACAAAADF7mXXU/WtT7z0NWaaEEhLcYAwJZBx1j7XneXE9BKGqyAAAAAusJcTBDZFyfQ7vxE5/BJ1V/bFL7+Pgk3KDtG5MB+ldkAAAACzFOGeZNK0IAwK6Qto3mLwtHFcY+cPfOFRlJVPYLj/+LOp25odc7apdWadmEMhxYtQP6kBKuSe+g7XmaMphWZ1</DTS:Password>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\CREACION DE TABLAS PARA EL MODELO ESTRELLA"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Tarea Ejecutar SQL"
+      DTS:DTSID="{9DFF1E55-C8FC-40CB-B146-802771BBE660}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREACION DE TABLAS PARA EL MODELO ESTRELLA"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{F08B8F9F-BF2F-4E5B-932B-74EAC1B5B311}"
+          SQLTask:SqlStatementSource="DROP TABLE IF EXISTS [Star].[FactBookings];&#xA;DROP TABLE IF EXISTS [Star].[DimHotel];&#xA;DROP TABLE IF EXISTS [Star].[DimCountry];&#xA;DROP TABLE IF EXISTS [Star].[DimMarket];&#xA;DROP TABLE IF EXISTS [Star].[DimCustomer];&#xA;&#xA;&#xA;--CREACION DE SCHEMA Star PARA ALMACENAR LAS TABLAS DEL MODELO ESTRELLA&#xA;IF NOT EXISTS (&#xA;    SELECT 1&#xA;    FROM sys.schemas&#xA;    WHERE name = 'Star'&#xA;)&#xA;BEGIN&#xA;    EXEC('CREATE SCHEMA Star');&#xA;END&#xA;&#xA;IF NOT EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'DimHotel' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;CREATE TABLE [Star].[DimHotel] (&#xA;&#x9;&#x9;hotel_id INT NOT NULL PRIMARY KEY IDENTITY,&#xA;&#x9;&#x9;hotel VARCHAR(50) UNIQUE NOT NULL,&#xA;&#x9;)&#xA;PRINT '✅ Tabla creada: DimHotel';&#xA;END ELSE BEGIN &#xA;PRINT '✅ Tabla DimHotel ya existe en la base';&#xA;END&#xA;&#xA;IF NOT EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'DimCountry' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;CREATE TABLE [Star].[DimCountry] (&#xA;&#x9;&#x9;country_id INT NOT NULL PRIMARY KEY IDENTITY,&#xA;&#x9;&#x9;country_code CHAR(5),&#xA;&#x9;&#x9;unique_country_code_region NVARCHAR(10) UNIQUE NOT NULL,&#xA;&#x9;&#x9;country_name NVARCHAR(MAX),&#xA;&#x9;&#x9;region NVARCHAR(MAX)&#xA;&#x9;);&#xA;&#x9;-- Añadir clave única compuesta&#xA;    ALTER TABLE [Star].[DimCountry]&#xA;    ADD CONSTRAINT UQ_DimCountry_code_name UNIQUE (country_id, country_code);&#xA;PRINT '✅ Tabla creada: DimCountry';&#xA;END ELSE BEGIN &#xA;&#x9;PRINT '✅ Tabla DimCountry ya existe en la base';&#xA;END&#xA;&#xA;IF NOT EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'DimMarket' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;CREATE TABLE [Star].[DimMarket] (&#xA;&#x9;&#x9;market_id INT NOT NULL PRIMARY KEY IDENTITY,&#xA;&#x9;&#x9;market_segment NVARCHAR(100) UNIQUE NOT NULL&#xA;&#x9;)&#xA;PRINT '✅ Tabla creada: DimMarket';&#xA;END ELSE BEGIN&#xA;&#x9;PRINT '✅ Tabla DimMarket ya existe en la base';&#xA;END&#xA;&#xA;IF NOT EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'DimCustomer' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;CREATE TABLE [Star].[DimCustomer] (&#xA;&#x9;&#x9;customer_id INT NOT NULL PRIMARY KEY IDENTITY,&#xA;&#x9;&#x9;customer_type NVARCHAR(100) UNIQUE NOT NULL&#xA;&#x9;);&#xA;PRINT '✅ Tabla creada: DimCustomer';&#xA;END ELSE BEGIN&#xA;&#x9;PRINT '✅ Tabla DimCustomer ya existe en la base';&#xA;END&#xA;&#xA;&#xA;IF NOT EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'FactBookings' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;CREATE TABLE [Star].[FactBookings] (&#xA;&#x9;&#x9;booking_id INT NOT NULL PRIMARY KEY IDENTITY,&#xA;&#x9;&#x9;--booking_key NVARCHAR(250) UNIQUE NOT NULL,&#xA;&#x9;&#x9;is_canceled BIT,&#xA;&#x9;&#x9;lead_time INT,&#xA;&#x9;&#x9;arrival_date_year INT,&#xA;&#x9;&#x9;arrival_date_month NVARCHAR(20),&#xA;&#x9;&#x9;arrival_date_week_number INT,&#xA;&#x9;&#x9;arrival_date_day_of_month INT,&#xA;&#x9;&#x9;stays_in_weekend_nights INT,&#xA;&#x9;&#x9;stays_in_week_nights INT,&#xA;&#x9;&#x9;adults INT,&#xA;&#x9;&#x9;children INT,&#xA;&#x9;&#x9;babies INT,&#xA;&#x9;&#x9;meal CHAR(8),&#xA;&#x9;&#x9;distribution_channel NVARCHAR(50),&#xA;&#x9;&#x9;is_repeated_guest BIT,&#xA;&#x9;&#x9;previous_cancellations INT,&#xA;&#x9;&#x9;previous_bookings_not_canceled INT,&#xA;&#x9;&#x9;reserved_room_type NVARCHAR(5),&#xA;&#x9;&#x9;assigned_room_type NVARCHAR(5),&#xA;&#x9;&#x9;booking_changes INT,&#xA;&#x9;&#x9;deposit_type NVARCHAR(50),&#xA;&#x9;&#x9;agent INT,&#xA;&#x9;&#x9;company INT,&#xA;&#x9;&#x9;days_in_waiting_list INT,&#xA;&#x9;&#x9;adr DECIMAL(10,2),&#xA;&#x9;&#x9;required_car_parking_spaces INT,&#xA;&#x9;&#x9;total_of_special_requests INT,&#xA;&#x9;&#x9;reservation_status NVARCHAR(50),&#xA;&#x9;&#x9;reservation_status_date DATE,&#xA;&#x9;&#x9;total_nights INT,&#xA;&#x9;&#x9;total_guests INT,&#xA;&#x9;&#x9;lead_time_groups NVARCHAR(10),&#xA;&#x9;&#x9;arrival_date DATE,&#xA;&#x9;&#x9;hotel_id INT FOREIGN KEY REFERENCES [Star].[DimHotel](hotel_id),&#xA;&#x9;&#x9;country_id INT FOREIGN KEY REFERENCES [Star].[DimCountry](country_id),&#xA;&#x9;&#x9;market_id INT FOREIGN KEY REFERENCES [Star].[DimMarket](market_id),&#xA;&#x9;&#x9;customer_id INT FOREIGN KEY REFERENCES [Star].[DimCustomer](customer_id),&#xA;&#x9;)&#xA;PRINT '✅ Tabla creada: FactBookings';&#xA;END ELSE BEGIN&#xA;&#x9;PRINT '✅ Tabla FactBookings ya existe en la base';&#xA;END" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\CREAR BD HotelBookings y TABLA BookingsRaw"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Tarea Ejecutar SQL"
+      DTS:DTSID="{8D1D5345-6AAE-42D5-8E5F-F8FDA72C8985}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="CREAR BD HotelBookings y TABLA BookingsRaw"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{F08B8F9F-BF2F-4E5B-932B-74EAC1B5B311}"
+          SQLTask:SqlStatementSource="--Crear base si no existe&#xA;DECLARE @DatabaseName NVARCHAR(128) = 'HotelBookings';&#xA;&#xA;IF NOT EXISTS (&#xA;    SELECT name FROM sys.databases WHERE name = @DatabaseName&#xA;)&#xA;BEGIN&#xA;    EXEC('CREATE DATABASE [' + @DatabaseName + ']');&#xA;    PRINT '✅ Base de datos creada: ' + @DatabaseName;&#xA;END&#xA;ELSE&#xA;BEGIN&#xA;    PRINT 'ℹ️ La base de datos ya existe: ' + @DatabaseName;&#xA;END&#xA;GO&#xA;&#xA;USE [HotelBookings];&#xA;GO&#xA;&#xA;--Se crea la tabla donde se almacenara el dataset subido sin transformar&#xA;IF EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'BookingsRaw' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;DROP TABLE IF EXISTS [dbo].[BookingsRaw];&#xA;    CREATE TABLE [BookingsRaw] (&#xA;        hotel NVARCHAR(MAX),&#xA;        is_canceled NVARCHAR(MAX),&#xA;        lead_time NVARCHAR(MAX),&#xA;&#x9;&#x9;arrival_date_year NVARCHAR(MAX),&#xA;&#x9;&#x9;arrival_date_month NVARCHAR(MAX),&#xA;&#x9;&#x9;arrival_date_week_number NVARCHAR(MAX),&#xA;&#x9;&#x9;arrival_date_day_of_month NVARCHAR(MAX),&#xA;&#x9;&#x9;stays_in_weekend_nights NVARCHAR(MAX),&#xA;&#x9;&#x9;stays_in_week_nights NVARCHAR(MAX),&#xA;&#x9;&#x9;adults NVARCHAR(MAX),&#xA;&#x9;&#x9;children NVARCHAR(MAX),&#xA;&#x9;&#x9;babies NVARCHAR(MAX),&#xA;&#x9;&#x9;meal NVARCHAR(MAX),&#xA;&#x9;&#x9;country NVARCHAR(MAX),&#xA;&#x9;&#x9;market_segment NVARCHAR(MAX),&#xA;&#x9;&#x9;distribution_channel NVARCHAR(MAX),&#xA;&#x9;&#x9;is_repeated_guest NVARCHAR(MAX),&#xA;&#x9;&#x9;previous_cancellations NVARCHAR(MAX),&#xA;&#x9;&#x9;previous_bookings_not_canceled NVARCHAR(MAX),&#xA;&#x9;&#x9;reserved_room_type NVARCHAR(MAX),&#xA;&#x9;&#x9;assigned_room_type NVARCHAR(MAX),&#xA;&#x9;&#x9;booking_changes NVARCHAR(MAX),&#xA;&#x9;&#x9;deposit_type NVARCHAR(MAX),&#xA;&#x9;&#x9;agent NVARCHAR(MAX),&#xA;&#x9;&#x9;company NVARCHAR(MAX),&#xA;&#x9;&#x9;days_in_waiting_list NVARCHAR(MAX),&#xA;&#x9;&#x9;customer_type NVARCHAR(MAX),&#xA;&#x9;&#x9;adr NVARCHAR(MAX),&#xA;&#x9;&#x9;required_car_parking_spaces NVARCHAR(MAX),&#xA;&#x9;&#x9;total_of_special_requests NVARCHAR(MAX),&#xA;&#x9;&#x9;reservation_status NVARCHAR(MAX),&#xA;&#x9;&#x9;reservation_status_date NVARCHAR(MAX)&#xA;    );&#xA;    PRINT '✅ Tabla creada: BookingsRaw';&#xA;END&#xA;ELSE&#xA;BEGIN&#xA;    PRINT 'ℹ️ La tabla BookingsRaw ya existe';&#xA;END&#xA;GO&#xA;&#xA;&#xA;IF EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'BookingsRaw' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;DROP TABLE IF EXISTS [dbo].[CountryCodes];&#xA;&#x9;CREATE TABLE [CountryCodes] (&#xA;&#x9;&#x9;country_name NVARCHAR(MAX),&#xA;&#x9;&#x9;country_code_ISO3 NVARCHAR(MAX),&#xA;&#x9;&#x9;country_code NVARCHAR(MAX)&#xA;&#x9;);&#xA;&#x9;PRINT '✅ Tabla creada: CountryCodes';&#xA;END&#xA;ELSE&#xA;BEGIN&#xA;    PRINT 'ℹ️ La tabla CountryCodes ya existe';&#xA;END&#xA;GO" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\GUARDAR LOS DATOS LIMPIOS,EN LAS TABLAS DEL MODELO"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Tarea Ejecutar SQL"
+      DTS:DTSID="{EAF006FD-8CA3-4ABB-A30C-ABEC54343713}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="GUARDAR LOS DATOS LIMPIOS,EN LAS TABLAS DEL MODELO"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{F08B8F9F-BF2F-4E5B-932B-74EAC1B5B311}"
+          SQLTask:SqlStatementSource="INSERT INTO [Star].[DimHotel]&#xA;(hotel)&#xA;SELECT&#xA;&#x9;DISTINCT hotel&#xA;FROM [Stage].[BookingsClean]&#xA;&#xA;INSERT INTO [Star].[DimCountry]&#xA;(country_code, unique_country_code_region, country_name, region)&#xA;SELECT&#xA;&#x9;DISTINCT country, CONCAT(country, '_', SUBSTRING(region, 1, 3)), country_normalized, region&#xA;FROM [Stage].[BookingsClean]&#xA;&#xA;INSERT INTO [Star].[DimMarket]&#xA;(market_segment)&#xA;SELECT&#xA;&#x9;DISTINCT market_segment&#xA;FROM [Stage].[BookingsClean]&#xA;&#xA;INSERT INTO [Star].[DimCustomer]&#xA;(customer_type)&#xA;SELECT&#xA;&#x9;DISTINCT customer_type&#xA;FROM [Stage].[BookingsClean]&#xA;&#xA;&#xA;&#xA;INSERT INTO [Star].[FactBookings]&#xA;(&#xA;&#x9;is_canceled, &#xA;&#x9;lead_time, &#xA;&#x9;arrival_date_year, &#xA;&#x9;arrival_date_month, &#xA;&#x9;arrival_date_week_number, &#xA;&#x9;arrival_date_day_of_month,&#x9;&#xA;&#x9;stays_in_weekend_nights,&#x9;&#xA;&#x9;stays_in_week_nights,&#xA;&#x9;adults,&#xA;&#x9;children,&#xA;&#x9;babies,&#xA;&#x9;meal,&#xA;&#x9;distribution_channel,&#xA;&#x9;is_repeated_guest,&#xA;&#x9;previous_cancellations,&#xA;&#x9;previous_bookings_not_canceled,&#xA;&#x9;reserved_room_type,&#xA;&#x9;assigned_room_type,&#xA;&#x9;booking_changes,&#xA;&#x9;deposit_type,&#xA;&#x9;agent,&#xA;&#x9;company,&#xA;&#x9;days_in_waiting_list,&#xA;&#x9;adr,&#xA;&#x9;required_car_parking_spaces,&#xA;&#x9;total_of_special_requests,&#xA;&#x9;reservation_status,&#xA;&#x9;reservation_status_date,&#xA;&#x9;total_nights,&#xA;&#x9;total_guests,&#xA;&#x9;lead_time_groups,&#xA;&#x9;arrival_date,&#xA;&#x9;hotel_id,&#xA;&#x9;country_id,&#xA;&#x9;market_id,&#xA;&#x9;customer_id&#xA;)&#xA;SELECT&#xA;&#x9;is_canceled,&#xA;&#x9;lead_time, &#xA;&#x9;arrival_date_year, &#xA;&#x9;arrival_date_month, &#xA;&#x9;arrival_date_week_number, &#xA;&#x9;arrival_date_day_of_month,&#x9;&#xA;&#x9;stays_in_weekend_nights,&#x9;&#xA;&#x9;stays_in_week_nights,&#xA;&#x9;adults,&#xA;&#x9;children,&#xA;&#x9;babies,&#xA;&#x9;meal,&#xA;&#x9;distribution_channel,&#xA;&#x9;is_repeated_guest,&#xA;&#x9;previous_cancellations,&#xA;&#x9;previous_bookings_not_canceled,&#xA;&#x9;reserved_room_type,&#xA;&#x9;assigned_room_type,&#xA;&#x9;booking_changes,&#xA;&#x9;deposit_type,&#xA;&#x9;agent,&#xA;&#x9;company,&#xA;&#x9;days_in_waiting_list,&#xA;&#x9;adr,&#xA;&#x9;required_car_parking_spaces,&#xA;&#x9;total_of_special_requests,&#xA;&#x9;reservation_status,&#xA;&#x9;reservation_status_date,&#xA;&#x9;total_nights,&#xA;&#x9;total_guests,&#xA;&#x9;lead_time_groups,&#xA;&#x9;arrival_date,&#xA;&#x9;hotel.hotel_id,&#xA;&#x9;coun.country_id,&#xA;&#x9;mark.market_id,&#xA;&#x9;cust.customer_id&#xA;FROM [Stage].[BookingsClean] AS clean_book&#xA;JOIN [Star].[DimHotel] AS hotel ON clean_book.hotel = hotel.hotel&#xA;JOIN [Star].[DimCountry] AS coun ON clean_book.country = coun.country_code&#xA;JOIN [Star].[DimCustomer] AS cust ON clean_book.customer_type = cust.customer_type&#xA;JOIN [Star].[DimMarket] AS mark ON clean_book.market_segment = mark.market_segment;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tarea Flujo de datos"
+      DTS:DTSID="{627C7B53-17FE-4F16-A069-49FF859C7762}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destino de OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Todos los derechos reservados; http://www.microsoft.com/sql/support;4"
+              description="Destino de OLE DB"
+              name="Destino de OLE DB"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Número de segundos antes de que se agote el tiempo de espera de un comando. Un valor de 0 indica un tiempo de espera infinito."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica el nombre del objeto de base de datos usado para abrir un conjunto de filas."
+                  name="OpenRowset">[dbo].[CountryCodes]</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica la variable que contiene el nombre del objeto de base de datos usado para abrir un conjunto de filas."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Comando SQL para ejecutar."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Especifica la página de códigos de columna para utilizar cuando la información de página de códigos no está disponible en el origen de datos."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Fuerza el uso del valor de la propiedad DefaultCodePage al describir datos de caracteres."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Especifica el modo utilizado para obtener acceso a la base de datos."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indica si los valores proporcionados para columnas de identidad se van a copiar al destino. Si es False, los valores de las columnas de identidad se generan automáticamente en el destino. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indica si las columnas que contienen NULL tendrán NULL insertado en el destino. Si es False, las columnas que contienen NULL tendrán sus valores predeterminados insertados en el destino. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica opciones para usar con la carga rápida. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Especifica cuándo se emiten confirmaciones durante la inserción de datos. El valor 0 especifica que se emitirá una confirmación al final de la inserción de datos. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[DESKTOP-GOCIPJK.HotelBookings.sa]"
+                  connectionManagerRefId="Package.ConnectionManagers[DESKTOP-GOCIPJK.HotelBookings.sa]"
+                  description="La conexión de tiempo de ejecución OLE DB usada para obtener acceso a la base de datos."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB]"
+                  errorOrTruncationOperation="Insertar"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrada de destino de OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].Columns[country_name]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="country_name"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].ExternalColumns[country_name]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_name]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].Columns[country_code_ISO3]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="country_code_ISO3"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].ExternalColumns[country_code_ISO3]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_code_ISO3]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].Columns[country_code]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="country_code"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].ExternalColumns[country_code]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_code]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].ExternalColumns[country_name]"
+                      dataType="nText"
+                      name="country_name" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].ExternalColumns[country_code_ISO3]"
+                      dataType="nText"
+                      name="country_code_ISO3" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB].ExternalColumns[country_code]"
+                      dataType="nText"
+                      name="country_code" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Outputs[Salida de error de destino de OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Salida de error de destino de OLE DB"
+                  synchronousInputId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Outputs[Salida de error de destino de OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Outputs[Salida de error de destino de OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Outputs[Salida de error de destino de OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Outputs[Salida de error de destino de OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destino de OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Todos los derechos reservados; http://www.microsoft.com/sql/support;4"
+              description="Destino de OLE DB"
+              name="GUARDAR DATASET CSV EN TABLA BookingsRaw"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Número de segundos antes de que se agote el tiempo de espera de un comando. Un valor de 0 indica un tiempo de espera infinito."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica el nombre del objeto de base de datos usado para abrir un conjunto de filas."
+                  name="OpenRowset">[dbo].[BookingsRaw]</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica la variable que contiene el nombre del objeto de base de datos usado para abrir un conjunto de filas."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Comando SQL para ejecutar."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Especifica la página de códigos de columna para utilizar cuando la información de página de códigos no está disponible en el origen de datos."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Fuerza el uso del valor de la propiedad DefaultCodePage al describir datos de caracteres."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Especifica el modo utilizado para obtener acceso a la base de datos."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indica si los valores proporcionados para columnas de identidad se van a copiar al destino. Si es False, los valores de las columnas de identidad se generan automáticamente en el destino. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indica si las columnas que contienen NULL tendrán NULL insertado en el destino. Si es False, las columnas que contienen NULL tendrán sus valores predeterminados insertados en el destino. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica opciones para usar con la carga rápida. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Especifica cuándo se emiten confirmaciones durante la inserción de datos. El valor 0 especifica que se emitirá una confirmación al final de la inserción de datos. Solo se aplica si está activada la carga rápida."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[DESKTOP-GOCIPJK.HotelBookings.sa]"
+                  connectionManagerRefId="Package.ConnectionManagers[DESKTOP-GOCIPJK.HotelBookings.sa]"
+                  description="La conexión de tiempo de ejecución OLE DB usada para obtener acceso a la base de datos."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB]"
+                  errorOrTruncationOperation="Insertar"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrada de destino de OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[hotel]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="hotel"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[hotel]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[hotel]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[is_canceled]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="is_canceled"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[is_canceled]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[is_canceled]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[lead_time]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="lead_time"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[lead_time]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[lead_time]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[arrival_date_year]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="arrival_date_year"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_year]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_year]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[arrival_date_month]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="arrival_date_month"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_month]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_month]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[arrival_date_week_number]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="arrival_date_week_number"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_week_number]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_week_number]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[arrival_date_day_of_month]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="arrival_date_day_of_month"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_day_of_month]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_day_of_month]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[stays_in_weekend_nights]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="stays_in_weekend_nights"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[stays_in_weekend_nights]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[stays_in_weekend_nights]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[stays_in_week_nights]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="stays_in_week_nights"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[stays_in_week_nights]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[stays_in_week_nights]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[adults]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="adults"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[adults]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[adults]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[children]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="children"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[children]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[children]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[babies]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="babies"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[babies]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[babies]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[meal]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="meal"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[meal]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[meal]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[country]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="country"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[country]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[country]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[market_segment]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="market_segment"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[market_segment]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[market_segment]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[distribution_channel]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="distribution_channel"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[distribution_channel]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[distribution_channel]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[is_repeated_guest]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="is_repeated_guest"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[is_repeated_guest]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[is_repeated_guest]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[previous_cancellations]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="previous_cancellations"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[previous_cancellations]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[previous_cancellations]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[previous_bookings_not_canceled]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="previous_bookings_not_canceled"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[previous_bookings_not_canceled]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[previous_bookings_not_canceled]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[reserved_room_type]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="reserved_room_type"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[reserved_room_type]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reserved_room_type]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[assigned_room_type]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="assigned_room_type"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[assigned_room_type]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[assigned_room_type]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[booking_changes]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="booking_changes"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[booking_changes]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[booking_changes]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[deposit_type]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="deposit_type"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[deposit_type]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[deposit_type]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[agent]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="agent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[agent]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[agent]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[company]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="company"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[company]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[company]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[days_in_waiting_list]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="days_in_waiting_list"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[days_in_waiting_list]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[days_in_waiting_list]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[customer_type]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="customer_type"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[customer_type]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[customer_type]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[adr]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="adr"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[adr]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[adr]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[required_car_parking_spaces]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="required_car_parking_spaces"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[required_car_parking_spaces]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[required_car_parking_spaces]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[total_of_special_requests]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="total_of_special_requests"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[total_of_special_requests]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[total_of_special_requests]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[reservation_status]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="reservation_status"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[reservation_status]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reservation_status]" />
+                    <inputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].Columns[reservation_status_date]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="reservation_status_date"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[reservation_status_date]"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reservation_status_date]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[hotel]"
+                      dataType="nText"
+                      name="hotel" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[is_canceled]"
+                      dataType="nText"
+                      name="is_canceled" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[lead_time]"
+                      dataType="nText"
+                      name="lead_time" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_year]"
+                      dataType="nText"
+                      name="arrival_date_year" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_month]"
+                      dataType="nText"
+                      name="arrival_date_month" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_week_number]"
+                      dataType="nText"
+                      name="arrival_date_week_number" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[arrival_date_day_of_month]"
+                      dataType="nText"
+                      name="arrival_date_day_of_month" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[stays_in_weekend_nights]"
+                      dataType="nText"
+                      name="stays_in_weekend_nights" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[stays_in_week_nights]"
+                      dataType="nText"
+                      name="stays_in_week_nights" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[adults]"
+                      dataType="nText"
+                      name="adults" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[children]"
+                      dataType="nText"
+                      name="children" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[babies]"
+                      dataType="nText"
+                      name="babies" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[meal]"
+                      dataType="nText"
+                      name="meal" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[country]"
+                      dataType="nText"
+                      name="country" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[market_segment]"
+                      dataType="nText"
+                      name="market_segment" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[distribution_channel]"
+                      dataType="nText"
+                      name="distribution_channel" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[is_repeated_guest]"
+                      dataType="nText"
+                      name="is_repeated_guest" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[previous_cancellations]"
+                      dataType="nText"
+                      name="previous_cancellations" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[previous_bookings_not_canceled]"
+                      dataType="nText"
+                      name="previous_bookings_not_canceled" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[reserved_room_type]"
+                      dataType="nText"
+                      name="reserved_room_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[assigned_room_type]"
+                      dataType="nText"
+                      name="assigned_room_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[booking_changes]"
+                      dataType="nText"
+                      name="booking_changes" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[deposit_type]"
+                      dataType="nText"
+                      name="deposit_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[agent]"
+                      dataType="nText"
+                      name="agent" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[company]"
+                      dataType="nText"
+                      name="company" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[days_in_waiting_list]"
+                      dataType="nText"
+                      name="days_in_waiting_list" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[customer_type]"
+                      dataType="nText"
+                      name="customer_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[adr]"
+                      dataType="nText"
+                      name="adr" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[required_car_parking_spaces]"
+                      dataType="nText"
+                      name="required_car_parking_spaces" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[total_of_special_requests]"
+                      dataType="nText"
+                      name="total_of_special_requests" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[reservation_status]"
+                      dataType="nText"
+                      name="reservation_status" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB].ExternalColumns[reservation_status_date]"
+                      dataType="nText"
+                      name="reservation_status_date" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Outputs[Salida de error de destino de OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Salida de error de destino de OLE DB"
+                  synchronousInputId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Outputs[Salida de error de destino de OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Outputs[Salida de error de destino de OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Outputs[Salida de error de destino de OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Outputs[Salida de error de destino de OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes"
+              componentClassID="Microsoft.FlatFileSource"
+              contactInfo="Origen de archivo plano;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Todos los derechos reservados; http://www.microsoft.com/sql/support;1"
+              description="Origen de archivo plano"
+              localeId="3082"
+              name="IMPORTAR ARCHIVO CSV Country Codes"
+              usesDispositions="true"
+              version="1">
+              <properties>
+                <property
+                  dataType="System.Boolean"
+                  description="Especifica si las columnas de longitud cero se tratan como NULL."
+                  name="RetainNulls">true</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica el nombre de una columna de salida que contiene el nombre de archivo. Si no se especifica ningún nombre, no se genera ninguna columna de salida con el nombre de archivo."
+                  name="FileNameColumnName"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Connections[FlatFileConnection]"
+                  connectionManagerID="{441E3FEC-7009-4A0D-A5D3-EEB922D78979}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[Country_Codes_CSV]"
+                  name="FlatFileConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano]"
+                  name="Salida de origen de archivo plano">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_name]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].ExternalColumns[country_name]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_name]"
+                      name="country_name"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_code_ISO3]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].ExternalColumns[country_code_ISO3]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_code_ISO3]"
+                      name="country_code_ISO3"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_code]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].ExternalColumns[country_code]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].Columns[country_code]"
+                      name="country_code"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].ExternalColumns[country_name]"
+                      dataType="wstr"
+                      length="50"
+                      name="country_name" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].ExternalColumns[country_code_ISO3]"
+                      dataType="wstr"
+                      length="50"
+                      name="country_code_ISO3" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano].ExternalColumns[country_code]"
+                      dataType="wstr"
+                      length="50"
+                      name="country_code" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de error de origen de archivo plano]"
+                  isErrorOut="true"
+                  name="Salida de error de origen de archivo plano">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de error de origen de archivo plano].Columns[Columna de salida de error de origen de archivo plano]"
+                      codePage="65001"
+                      dataType="text"
+                      description="Columna de salida de error de origen de archivo plano"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de error de origen de archivo plano].Columns[Columna de salida de error de origen de archivo plano]"
+                      name="Columna de salida de error de origen de archivo plano" />
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de error de origen de archivo plano].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de error de origen de archivo plano].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de error de origen de archivo plano].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de error de origen de archivo plano].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings"
+              componentClassID="Microsoft.FlatFileSource"
+              contactInfo="Origen de archivo plano;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Todos los derechos reservados; http://www.microsoft.com/sql/support;1"
+              description="Origen de archivo plano"
+              localeId="3082"
+              name="IMPORTAR CSV DATASET hotel_bookings"
+              usesDispositions="true"
+              version="1">
+              <properties>
+                <property
+                  dataType="System.Boolean"
+                  description="Especifica si las columnas de longitud cero se tratan como NULL."
+                  name="RetainNulls">true</property>
+                <property
+                  dataType="System.String"
+                  description="Especifica el nombre de una columna de salida que contiene el nombre de archivo. Si no se especifica ningún nombre, no se genera ninguna columna de salida con el nombre de archivo."
+                  name="FileNameColumnName"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Connections[FlatFileConnection]"
+                  connectionManagerID="{00C59817-8936-4D14-A69B-8A67F67AC515}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[hotel_booking_ORIGINAL_DATASET]"
+                  name="FlatFileConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano]"
+                  name="Salida de origen de archivo plano">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[hotel]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[hotel]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[hotel]"
+                      name="hotel"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[is_canceled]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[is_canceled]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[is_canceled]"
+                      name="is_canceled"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[lead_time]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[lead_time]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[lead_time]"
+                      name="lead_time"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_year]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_year]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_year]"
+                      name="arrival_date_year"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_month]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_month]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_month]"
+                      name="arrival_date_month"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_week_number]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_week_number]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_week_number]"
+                      name="arrival_date_week_number"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_day_of_month]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_day_of_month]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[arrival_date_day_of_month]"
+                      name="arrival_date_day_of_month"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[stays_in_weekend_nights]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[stays_in_weekend_nights]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[stays_in_weekend_nights]"
+                      name="stays_in_weekend_nights"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[stays_in_week_nights]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[stays_in_week_nights]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[stays_in_week_nights]"
+                      name="stays_in_week_nights"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[adults]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[adults]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[adults]"
+                      name="adults"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[children]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[children]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[children]"
+                      name="children"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[babies]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[babies]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[babies]"
+                      name="babies"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[meal]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[meal]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[meal]"
+                      name="meal"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[country]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[country]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[country]"
+                      name="country"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[market_segment]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[market_segment]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[market_segment]"
+                      name="market_segment"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[distribution_channel]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[distribution_channel]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[distribution_channel]"
+                      name="distribution_channel"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[is_repeated_guest]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[is_repeated_guest]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[is_repeated_guest]"
+                      name="is_repeated_guest"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[previous_cancellations]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[previous_cancellations]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[previous_cancellations]"
+                      name="previous_cancellations"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[previous_bookings_not_canceled]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[previous_bookings_not_canceled]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[previous_bookings_not_canceled]"
+                      name="previous_bookings_not_canceled"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reserved_room_type]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[reserved_room_type]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reserved_room_type]"
+                      name="reserved_room_type"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[assigned_room_type]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[assigned_room_type]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[assigned_room_type]"
+                      name="assigned_room_type"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[booking_changes]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[booking_changes]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[booking_changes]"
+                      name="booking_changes"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[deposit_type]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[deposit_type]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[deposit_type]"
+                      name="deposit_type"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[agent]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[agent]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[agent]"
+                      name="agent"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[company]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[company]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[company]"
+                      name="company"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[days_in_waiting_list]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[days_in_waiting_list]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[days_in_waiting_list]"
+                      name="days_in_waiting_list"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[customer_type]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[customer_type]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[customer_type]"
+                      name="customer_type"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[adr]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[adr]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[adr]"
+                      name="adr"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[required_car_parking_spaces]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[required_car_parking_spaces]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[required_car_parking_spaces]"
+                      name="required_car_parking_spaces"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[total_of_special_requests]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[total_of_special_requests]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[total_of_special_requests]"
+                      name="total_of_special_requests"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reservation_status]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[reservation_status]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reservation_status]"
+                      name="reservation_status"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reservation_status_date]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[reservation_status_date]"
+                      length="50"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].Columns[reservation_status_date]"
+                      name="reservation_status_date"
+                      truncationRowDisposition="FailComponent">
+                      <properties>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si la columna usa las rutinas de análisis más rápidas independientes de la configuración regional."
+                          name="FastParse">false</property>
+                        <property
+                          dataType="System.Boolean"
+                          description="Indica si los datos están en formato binario."
+                          name="UseBinaryFormat">false</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[hotel]"
+                      dataType="wstr"
+                      length="50"
+                      name="hotel" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[is_canceled]"
+                      dataType="wstr"
+                      length="50"
+                      name="is_canceled" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[lead_time]"
+                      dataType="wstr"
+                      length="50"
+                      name="lead_time" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_year]"
+                      dataType="wstr"
+                      length="50"
+                      name="arrival_date_year" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_month]"
+                      dataType="wstr"
+                      length="50"
+                      name="arrival_date_month" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_week_number]"
+                      dataType="wstr"
+                      length="50"
+                      name="arrival_date_week_number" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[arrival_date_day_of_month]"
+                      dataType="wstr"
+                      length="50"
+                      name="arrival_date_day_of_month" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[stays_in_weekend_nights]"
+                      dataType="wstr"
+                      length="50"
+                      name="stays_in_weekend_nights" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[stays_in_week_nights]"
+                      dataType="wstr"
+                      length="50"
+                      name="stays_in_week_nights" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[adults]"
+                      dataType="wstr"
+                      length="50"
+                      name="adults" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[children]"
+                      dataType="wstr"
+                      length="50"
+                      name="children" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[babies]"
+                      dataType="wstr"
+                      length="50"
+                      name="babies" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[meal]"
+                      dataType="wstr"
+                      length="50"
+                      name="meal" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[country]"
+                      dataType="wstr"
+                      length="50"
+                      name="country" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[market_segment]"
+                      dataType="wstr"
+                      length="50"
+                      name="market_segment" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[distribution_channel]"
+                      dataType="wstr"
+                      length="50"
+                      name="distribution_channel" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[is_repeated_guest]"
+                      dataType="wstr"
+                      length="50"
+                      name="is_repeated_guest" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[previous_cancellations]"
+                      dataType="wstr"
+                      length="50"
+                      name="previous_cancellations" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[previous_bookings_not_canceled]"
+                      dataType="wstr"
+                      length="50"
+                      name="previous_bookings_not_canceled" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[reserved_room_type]"
+                      dataType="wstr"
+                      length="50"
+                      name="reserved_room_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[assigned_room_type]"
+                      dataType="wstr"
+                      length="50"
+                      name="assigned_room_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[booking_changes]"
+                      dataType="wstr"
+                      length="50"
+                      name="booking_changes" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[deposit_type]"
+                      dataType="wstr"
+                      length="50"
+                      name="deposit_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[agent]"
+                      dataType="wstr"
+                      length="50"
+                      name="agent" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[company]"
+                      dataType="wstr"
+                      length="50"
+                      name="company" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[days_in_waiting_list]"
+                      dataType="wstr"
+                      length="50"
+                      name="days_in_waiting_list" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[customer_type]"
+                      dataType="wstr"
+                      length="50"
+                      name="customer_type" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[adr]"
+                      dataType="wstr"
+                      length="50"
+                      name="adr" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[required_car_parking_spaces]"
+                      dataType="wstr"
+                      length="50"
+                      name="required_car_parking_spaces" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[total_of_special_requests]"
+                      dataType="wstr"
+                      length="50"
+                      name="total_of_special_requests" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[reservation_status]"
+                      dataType="wstr"
+                      length="50"
+                      name="reservation_status" />
+                    <externalMetadataColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano].ExternalColumns[reservation_status_date]"
+                      dataType="wstr"
+                      length="50"
+                      name="reservation_status_date" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de error de origen de archivo plano]"
+                  isErrorOut="true"
+                  name="Salida de error de origen de archivo plano">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de error de origen de archivo plano].Columns[Columna de salida de error de origen de archivo plano]"
+                      codePage="1252"
+                      dataType="text"
+                      description="Columna de salida de error de origen de archivo plano"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de error de origen de archivo plano].Columns[Columna de salida de error de origen de archivo plano]"
+                      name="Columna de salida de error de origen de archivo plano" />
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de error de origen de archivo plano].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de error de origen de archivo plano].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de error de origen de archivo plano].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de error de origen de archivo plano].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE.Paths[Salida de origen de archivo plano]"
+              endId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw.Inputs[Entrada de destino de OLE DB]"
+              name="Salida de origen de archivo plano"
+              startId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings.Outputs[Salida de origen de archivo plano]" />
+            <path
+              refId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE.Paths[Salida de origen de archivo plano1]"
+              endId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB.Inputs[Entrada de destino de OLE DB]"
+              name="Salida de origen de archivo plano"
+              startId="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes.Outputs[Salida de origen de archivo plano]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\LIMPIEZA Y TRANSFORMACION PARA GUARDAR EN Stage BookingsClean TABLE"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Tarea Ejecutar SQL"
+      DTS:DTSID="{399FEFD1-E342-4885-9B29-5B9CEB42D75C}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="LIMPIEZA Y TRANSFORMACION PARA GUARDAR EN Stage BookingsClean TABLE"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{F08B8F9F-BF2F-4E5B-932B-74EAC1B5B311}"
+          SQLTask:SqlStatementSource="--CREACION DE SCHEMA PARA ALMACENAR TABLAS CON DATA SIN PROCESAR&#xA;IF NOT EXISTS (&#xA;    SELECT 1&#xA;    FROM sys.schemas&#xA;    WHERE name = 'Stage'&#xA;)&#xA;BEGIN&#xA;    EXEC('CREATE SCHEMA Stage');&#xA;END&#xA;&#xA;&#xA;&#xA;&#xA;--Se crea la tabla donde se almacenara el dataset transformado antes de ser modelado&#xA;IF EXISTS (&#xA;    SELECT 1 FROM INFORMATION_SCHEMA.TABLES &#xA;    WHERE TABLE_NAME = 'BookingsClean' AND TABLE_TYPE = 'BASE TABLE'&#xA;)&#xA;BEGIN&#xA;&#x9;DROP TABLE IF EXISTS [Stage].[BookingsClean];&#xA;&#x9;CREATE TABLE [Stage].[BookingsClean] (&#xA;&#x9;&#x9;hotel NVARCHAR(50),&#xA;&#x9;&#x9;is_canceled BIT,&#xA;&#x9;&#x9;lead_time INT,&#xA;&#x9;&#x9;arrival_date_year INT,&#xA;&#x9;&#x9;arrival_date_month NVARCHAR(20),&#xA;&#x9;&#x9;arrival_date_week_number INT,&#xA;&#x9;&#x9;arrival_date_day_of_month INT,&#xA;&#x9;&#x9;--is_weekend BIT, --se normaliza para validar si es fin de semana o es dia de semana&#xA;&#x9;&#x9;stays_in_weekend_nights INT,&#xA;&#x9;&#x9;stays_in_week_nights INT,&#xA;&#x9;&#x9;adults INT,&#xA;&#x9;&#x9;children INT,&#xA;&#x9;&#x9;babies INT,&#xA;&#x9;&#x9;meal NVARCHAR(10),&#xA;&#x9;&#x9;country NVARCHAR(10),&#xA;&#x9;&#x9;market_segment NVARCHAR(50),&#xA;&#x9;&#x9;distribution_channel NVARCHAR(50),&#xA;&#x9;&#x9;is_repeated_guest BIT,&#xA;&#x9;&#x9;previous_cancellations INT,&#xA;&#x9;&#x9;previous_bookings_not_canceled INT,&#xA;&#x9;&#x9;reserved_room_type NVARCHAR(5),&#xA;&#x9;&#x9;assigned_room_type NVARCHAR(5),&#xA;&#x9;&#x9;booking_changes INT,&#xA;&#x9;&#x9;deposit_type NVARCHAR(50),&#xA;&#x9;&#x9;agent INT,&#xA;&#x9;&#x9;company INT,&#xA;&#x9;&#x9;days_in_waiting_list INT,&#xA;&#x9;&#x9;customer_type NVARCHAR(50),&#xA;&#x9;&#x9;adr DECIMAL(10,2),&#xA;&#x9;&#x9;required_car_parking_spaces INT,&#xA;&#x9;&#x9;total_of_special_requests INT,&#xA;&#x9;&#x9;reservation_status NVARCHAR(50),&#xA;&#x9;&#x9;reservation_status_date DATE,&#xA;        country_normalized NVARCHAR(250),&#xA;&#x9;&#x9;region NVARCHAR(250),&#xA;&#x9;&#x9;total_nights INT,&#xA;&#x9;&#x9;total_guests INT,&#xA;&#x9;&#x9;lead_time_groups NVARCHAR(10),&#xA;&#x9;&#x9;arrival_date DATE --se unen las columnas arrival_date_day_of_month, arrival_date_month y arrival_date_year&#xA;&#x9;);&#xA;;&#xA;PRINT '✅ Tabla creada: BookingsClean';&#xA;END ELSE BEGIN PRINT 'ℹ️ La tabla BookingsClean ya existe';&#xA;END&#xA;&#xA;&#xA;&#xA;INSERT INTO [Stage].[BookingsClean]&#xA;(&#xA;&#x9;hotel, &#xA;&#x9;is_canceled, &#xA;&#x9;lead_time, &#xA;&#x9;arrival_date_year, &#xA;&#x9;arrival_date_month, &#xA;&#x9;arrival_date_week_number,&#xA;&#x9;arrival_date_day_of_month,&#xA;&#x9;stays_in_weekend_nights,&#xA;&#x9;stays_in_week_nights,&#xA;&#x9;adults,&#xA;&#x9;children,&#xA;&#x9;babies,&#xA;&#x9;meal,&#xA;&#x9;country,&#xA;&#x9;market_segment,&#xA;&#x9;distribution_channel,&#xA;&#x9;is_repeated_guest,&#xA;&#x9;previous_cancellations,&#xA;&#x9;previous_bookings_not_canceled,&#xA;&#x9;reserved_room_type,&#xA;&#x9;assigned_room_type,&#xA;&#x9;booking_changes,&#xA;&#x9;deposit_type,&#xA;&#x9;agent,&#xA;&#x9;company,&#xA;&#x9;days_in_waiting_list,&#xA;&#x9;customer_type,&#xA;&#x9;adr,&#xA;&#x9;required_car_parking_spaces,&#xA;&#x9;total_of_special_requests,&#xA;&#x9;reservation_status,&#xA;&#x9;reservation_status_date,&#xA;&#x9;country_normalized,&#xA;&#x9;region,&#xA;&#x9;total_nights,&#xA;&#x9;total_guests,&#xA;&#x9;lead_time_groups,&#xA;&#x9;arrival_date&#xA;)&#xA;SELECT&#xA;&#x9;hotel,&#xA;&#x9;is_canceled,&#xA;&#x9;lead_time,&#xA;&#x9;arrival_date_year,&#xA;&#x9;arrival_date_month,&#xA;&#x9;arrival_date_week_number,&#xA;&#x9;arrival_date_day_of_month,&#xA;&#x9;stays_in_weekend_nights,&#xA;&#x9;stays_in_week_nights,&#xA;&#x9;adults,&#xA;&#x9;TRY_CAST(&#xA;&#x9;&#x9;CASE &#xA;&#x9;&#x9;&#x9;WHEN children = 'NA' THEN 0&#xA;&#x9;&#x9;&#x9;ELSE children &#xA;&#x9;&#x9;END AS INT&#xA;&#x9;) AS children,&#xA;&#x9;babies,&#xA;&#x9;CASE&#xA;&#x9;&#x9;WHEN meal = 'Undefined' THEN 'Other'&#xA;&#x9;&#x9;ELSE meal&#xA;&#x9;END AS meal,&#xA;&#x9;CASE&#xA;&#x9;&#x9;WHEN country = 'NULL' THEN 'Other'&#xA;&#x9;&#x9;ELSE country&#xA;&#x9;END AS country,&#xA;&#x9;market_segment,&#xA;&#x9;distribution_channel,&#xA;&#x9;is_repeated_guest,&#xA;&#x9;previous_cancellations,&#xA;&#x9;previous_bookings_not_canceled,&#xA;&#x9;reserved_room_type,&#xA;&#x9;assigned_room_type,&#xA;&#x9;booking_changes,&#xA;&#x9;deposit_type,&#xA;&#x9;COALESCE(&#xA;&#x9;  TRY_CAST(IIF(agent IN ('NULL', 'NA', ''), '0', agent) AS INT),&#xA;&#x9;  0&#xA;&#x9;) AS agent,&#xA;&#x9;COALESCE(&#xA;&#x9;  TRY_CAST(IIF(company IN ('NULL', 'NA', ''), '0', company) AS INT),&#xA;&#x9;  0&#xA;&#x9;) AS company,&#xA;&#x9;days_in_waiting_list,&#xA;&#x9;customer_type,&#xA;&#x9;TRY_CAST(REPLACE(adr, '.', ',') AS DECIMAL(8,2)) AS adr,&#xA;&#x9;required_car_parking_spaces,&#xA;&#x9;total_of_special_requests,&#xA;&#x9;reservation_status,&#xA;&#x9;reservation_status_date,&#xA;&#x9;CASE&#xA;&#x9;&#x9;WHEN country_codes.country_name IS NULL THEN 'Other'&#xA;&#x9;&#x9;ELSE country_codes.country_name&#xA;&#x9;END AS country_normalized,&#xA;&#x9;CASE &#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Portugal', 'España', 'Francia', 'Italia', 'Alemania', 'Bélgica', 'Países Bajos',&#xA;&#x9;&#x9;&#x9;'Suiza', 'Austria', 'Grecia', 'Irlanda', 'Reino Unido', 'Andorra', 'San Marino',&#xA;&#x9;&#x9;&#x9;'Luxemburgo', 'Mónaco'&#xA;&#x9;&#x9;) THEN 'Europa Occidental'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Suecia', 'Noruega', 'Finlandia', 'Islandia', 'Dinamarca'&#xA;&#x9;&#x9;) THEN 'Europa del Norte'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Polonia', 'Rumania', 'Hungría', 'República Checa', 'Eslovaquia', 'Bulgaria',&#xA;&#x9;&#x9;&#x9;'Croacia', 'Eslovenia', 'Estonia', 'Letonia', 'Lituania', 'Ucrania', 'Bielorrusia',&#xA;&#x9;&#x9;&#x9;'Serbia', 'Bosnia y Herzegovina', 'Albania', 'Macedonia', 'Montenegro'&#xA;&#x9;&#x9;) THEN 'Europa del Este'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Estados Unidos', 'Canadá', 'México'&#xA;&#x9;&#x9;) THEN 'América del Norte'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Argentina', 'Brasil', 'Chile', 'Uruguay', 'Paraguay', 'Bolivia', 'Perú',&#xA;&#x9;&#x9;&#x9;'Colombia', 'Venezuela', 'Ecuador', 'Guayana', 'Surinam'&#xA;&#x9;&#x9;) THEN 'América del Sur'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Cuba', 'República Dominicana', 'Puerto Rico', 'Jamaica', 'Barbados',&#xA;&#x9;&#x9;&#x9;'Santa Lucía', 'Bahamas', 'Trinidad y Tobago'&#xA;&#x9;&#x9;) THEN 'Caribe'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'China', 'Japón', 'Corea del Sur', 'India', 'Tailandia', 'Indonesia', 'Vietnam',&#xA;&#x9;&#x9;&#x9;'Filipinas', 'Malasia', 'Bangladesh', 'Kazajistán', 'Uzbekistán', 'Nepal',&#xA;&#x9;&#x9;&#x9;'Sri Lanka', 'Taiwán'&#xA;&#x9;&#x9;) THEN 'Asia'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Australia', 'Nueva Zelandia', 'Fiji', 'Polinesia Francesa', 'Islas Feroe',&#xA;&#x9;&#x9;&#x9;'Nueva Caledonia'&#xA;&#x9;&#x9;) THEN 'Oceanía'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Sudáfrica', 'Nigeria', 'Egipto', 'Kenia', 'Marruecos', 'Argelia', 'Etiopía',&#xA;&#x9;&#x9;&#x9;'Ghana', 'Túnez', 'Mozambique', 'Zimbabue', 'Angola', 'Senegal', 'Uganda',&#xA;&#x9;&#x9;&#x9;'Botsuana', 'Malaui', 'Namibia', 'Ruanda', 'Tanzania'&#xA;&#x9;&#x9;) THEN 'África'&#xA;&#x9;&#x9;WHEN country_codes.country_name IN (&#xA;&#x9;&#x9;&#x9;'Arabia Saudita', 'Israel', 'Irán', 'Irak', 'Emiratos Árabes', 'Qatar',&#xA;&#x9;&#x9;&#x9;'Jordania', 'Líbano', 'Siria', 'Turquía', 'Kuwait'&#xA;&#x9;&#x9;) THEN 'Medio Oriente'&#xA;&#x9;&#x9;ELSE 'Unknown'&#xA;&#x9;END AS region,&#xA;&#x9;TRY_CAST(stays_in_week_nights AS INT) + TRY_CAST(stays_in_weekend_nights AS INT) AS total_nights,&#xA;&#x9;TRY_CAST(adults AS INT) + TRY_CAST(children AS INT) + TRY_CAST(babies AS INT) AS total_guests,&#xA;&#x9;CASE&#xA;&#x9;&#x9;WHEN lead_time &lt;= 7 THEN 'Corto'&#xA;&#x9;&#x9;WHEN lead_time &gt; 7 AND lead_time &lt; 30 THEN 'Medio'&#xA;&#x9;&#x9;WHEN lead_time &gt;= 30 THEN 'Largo'&#xA;&#x9;&#x9;ELSE 'Other'&#xA;&#x9;END AS lead_time_groups,&#xA;&#x9;TRY_CAST(CONCAT(arrival_date_year, '/', arrival_date_month, '/', arrival_date_day_of_month) AS DATE) AS arrival_date&#xA;FROM&#xA;&#x9;[dbo].[BookingsRaw] AS bookings&#xA;LEFT JOIN&#xA;&#x9;[dbo].[CountryCodes] country_codes ON bookings.country = country_codes.country_code_ISO3" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Restricción]"
+      DTS:CreationName=""
+      DTS:DTSID="{98D02376-E366-4C40-B83F-AC95CBF78F21}"
+      DTS:From="Package\CREAR BD HotelBookings y TABLA BookingsRaw"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Restricción"
+      DTS:To="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Restricción 1]"
+      DTS:CreationName=""
+      DTS:DTSID="{14A2BA65-93A6-44B5-9ADA-418E9EAAE76B}"
+      DTS:From="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Restricción 1"
+      DTS:To="Package\LIMPIEZA Y TRANSFORMACION PARA GUARDAR EN Stage BookingsClean TABLE" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Restricción 2]"
+      DTS:CreationName=""
+      DTS:DTSID="{AC76D116-A2E0-4CE1-B6D1-9C807E8BE702}"
+      DTS:From="Package\LIMPIEZA Y TRANSFORMACION PARA GUARDAR EN Stage BookingsClean TABLE"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Restricción 2"
+      DTS:To="Package\CREACION DE TABLAS PARA EL MODELO ESTRELLA" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Restricción 3]"
+      DTS:CreationName=""
+      DTS:DTSID="{A75FE052-9EC6-4635-B0F7-CB9C14CE724B}"
+      DTS:From="Package\CREACION DE TABLAS PARA EL MODELO ESTRELLA"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Restricción 3"
+      DTS:To="Package\GUARDAR LOS DATOS LIMPIOS,EN LAS TABLAS DEL MODELO" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--Esta sección CDATA contiene la información de diseño del paquete. Esta sección incluye información como, por ejemplo, las coordenadas (x,y), el ancho y el alto.-->
+<!--Si edita manualmente esta sección y comete un error, puede eliminarlo. -->
+<!--El paquete podrá cargarse normalmente, pero se perderá la información de diseño anterior y el diseñador reorganizará los elementos automáticamente en la superficie de diseño.-->
+<Objects
+  Version="8">
+  <!--Cada uno de los nodos siguientes contiene propiedades que no afectan al comportamiento en tiempo de ejecución.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="326,42"
+          Id="Package\CREAR BD HotelBookings y TABLA BookingsRaw"
+          TopLeft="171.777777777778,36.2222222222222" />
+        <NodeLayout
+          Size="785,42"
+          Id="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE"
+          TopLeft="34.4444444444445,116.666666666667" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Restricción]"
+          TopLeft="334.777777777778,78.2222222222222">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="92.1666666666666,38.4444444444444"
+              Start="0,0"
+              End="92.1666666666666,30.9444444444444">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,15.2222222222222" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,15.2222222222222"
+                    Point2="0,19.2222222222222"
+                    Point3="4,19.2222222222222" />
+                  <mssgle:LineSegment
+                    End="88.1666666666666,19.2222222222222" />
+                  <mssgle:CubicBezierSegment
+                    Point1="88.1666666666666,19.2222222222222"
+                    Point2="92.1666666666666,19.2222222222222"
+                    Point3="92.1666666666666,23.2222222222222" />
+                  <mssgle:LineSegment
+                    End="92.1666666666666,30.9444444444444" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="502,42"
+          Id="Package\LIMPIEZA Y TRANSFORMACION PARA GUARDAR EN Stage BookingsClean TABLE"
+          TopLeft="65,200" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Restricción 1]"
+          TopLeft="426.944444444444,158.666666666667">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-110.944444444444,41.3333333333333"
+              Start="0,0"
+              End="-110.944444444444,33.8333333333333">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,16.6666666666667" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,16.6666666666667"
+                    Point2="0,20.6666666666667"
+                    Point3="-4,20.6666666666667" />
+                  <mssgle:LineSegment
+                    End="-106.944444444444,20.6666666666667" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-106.944444444444,20.6666666666667"
+                    Point2="-110.944444444444,20.6666666666667"
+                    Point3="-110.944444444444,24.6666666666667" />
+                  <mssgle:LineSegment
+                    End="-110.944444444444,33.8333333333333" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="359,42"
+          Id="Package\CREACION DE TABLAS PARA EL MODELO ESTRELLA"
+          TopLeft="137.666666666667,282.222222222222" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Restricción 2]"
+          TopLeft="316.583333333333,242">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,40.2222222222222"
+              Start="0,0"
+              End="0,32.7222222222222">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,32.7222222222222" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="409,42"
+          Id="Package\GUARDAR LOS DATOS LIMPIOS,EN LAS TABLAS DEL MODELO"
+          TopLeft="110,371.111111111111" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Restricción 3]"
+          TopLeft="315.833333333333,324.222222222222">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,46.8888888888889"
+              Start="0,0"
+              End="0,39.3888888888889">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,39.3888888888889" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="293,42"
+          Id="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR CSV DATASET hotel_bookings"
+          TopLeft="59,37" />
+        <NodeLayout
+          Size="339,42"
+          Id="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw"
+          TopLeft="76,128" />
+        <EdgeLayout
+          Id="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE.Paths[Salida de origen de archivo plano]"
+          TopLeft="205.5,79">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="40,49"
+              Start="0,0"
+              End="40,41.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,20.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,20.5"
+                    Point2="0,24.5"
+                    Point3="4,24.5" />
+                  <mssgle:LineSegment
+                    End="36,24.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="36,24.5"
+                    Point2="40,24.5"
+                    Point3="40,28.5" />
+                  <mssgle:LineSegment
+                    End="40,41.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="292,42"
+          Id="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\IMPORTAR ARCHIVO CSV Country Codes"
+          TopLeft="433,24" />
+        <NodeLayout
+          Size="175,42"
+          Id="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\Destino de OLE DB"
+          TopLeft="478,136" />
+        <EdgeLayout
+          Id="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE.Paths[Salida de origen de archivo plano1]"
+          TopLeft="579,66">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-13.5,70"
+              Start="0,0"
+              End="-13.5,62.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,31" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,31"
+                    Point2="0,35"
+                    Point3="-4,35" />
+                  <mssgle:LineSegment
+                    End="-9.5,35" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-9.5,35"
+                    Point2="-13.5,35"
+                    Point3="-13.5,39" />
+                  <mssgle:LineSegment
+                    End="-13.5,62.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\IMPORTAR CSV hotel_bookings Y Country_Codes Y GUARDARLOS EN LAS TABLAS BookingsRaw y Country_Codes RESPECTIVAMMENTE\GUARDAR DATASET CSV EN TABLA BookingsRaw">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
